@@ -39,9 +39,22 @@
 }
 
 - (void)cancel:(id)sender {
-    [HUD hide:YES];
-    _closed = YES;
-    [self dismissViewControllerAnimated:YES completion:NULL];
+  //
+  [self close];
+  
+  //
+  if ([_delegate respondsToSelector:@selector(didCancelled)])
+  {
+    [_delegate performSelector:@selector(didCancelled)];
+  }
+
+}
+
+- (void)close {
+  //
+  [HUD hide:YES];
+  _closed = YES;
+  [self dismissViewControllerAnimated:YES completion:NULL];
 }
 
 - (void)stop:(id)sender {
@@ -129,21 +142,21 @@
 
 - (BOOL)webView:(UIWebView *)aWebView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
 {
-    NSRange range = [request.URL.absoluteString rangeOfString:@"code="];
+  NSRange range = [request.URL.absoluteString rangeOfString:@"code="];
+  
+  if (range.location != NSNotFound)
+  {
+    NSString *code = [request.URL.absoluteString substringFromIndex:range.location + range.length];
+    NSLog(@"code: %@", code);
     
-    if (range.location != NSNotFound)
+    if ([_delegate respondsToSelector:@selector(didReceiveAuthorizeCode:)])
     {
-        NSString *code = [request.URL.absoluteString substringFromIndex:range.location + range.length];
-        NSLog(@"code: %@", code);
-        
-        if ([_delegate respondsToSelector:@selector(didReceiveAuthorizeCode:)])
-        {
-            [_delegate performSelector:@selector(didReceiveAuthorizeCode:) withObject:code];
-        }
-        [self cancel:nil];
+      [_delegate performSelector:@selector(didReceiveAuthorizeCode:) withObject:code];
     }
-    
-    return YES;
+    [self close];
+  }
+  
+  return YES;
 }
 
 

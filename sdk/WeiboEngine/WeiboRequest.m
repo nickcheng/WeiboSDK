@@ -24,6 +24,7 @@ static const int kGeneralErrorCode = 10000;
 @synthesize delegate = _delegate;
 @synthesize error = _error;
 @synthesize accessToken = _accessToken;
+@synthesize tag = _tag;
 
 - (id)init {
     self = [super init];

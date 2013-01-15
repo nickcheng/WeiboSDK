@@ -7,7 +7,7 @@
 //
 
 #import "Resources.h"
-#import "JSONKit.h"
+//#import "JSONKit.h"
 
 static NSMutableDictionary *gProvinces;
 
@@ -21,19 +21,19 @@ static NSMutableDictionary *gProvinces;
 + (NSMutableDictionary *)provinces {
 	if (!gProvinces) {
 		gProvinces = [[NSMutableDictionary alloc] init];
+    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:[[Resources provincesJson] dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingMutableContainers error:nil];
 
-        NSDictionary *dic = [[Resources provincesJson] objectFromJSONString];
-        if (dic) {
-            NSArray *provinces = [dic objectForKey:@"provinces"];
-            if (provinces) {
-                for (NSDictionary *provinceDic in provinces) {
-                    Province *province = [[Province alloc]initWithDictionary:provinceDic];
-                    [gProvinces setObject:province forKey:province.provinceId];
-                    [province release];
-                }
-            }
+    if (dic) {
+      NSArray *provinces = [dic objectForKey:@"provinces"];
+      if (provinces) {
+        for (NSDictionary *provinceDic in provinces) {
+          Province *province = [[Province alloc]initWithDictionary:provinceDic];
+          [gProvinces setObject:province forKey:province.provinceId];
+          [province release];
         }
+      }
     }
+  }
 	return gProvinces;
 	
 }

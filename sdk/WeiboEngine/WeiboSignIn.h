@@ -11,9 +11,12 @@
 #import "WeiboConfig.h"
 #import "WeiboAuthentication.h"
 
-@protocol WeiboSignInDelegate
+@protocol WeiboSignInDelegate <NSObject>
 
 - (void)finishedWithAuth:(WeiboAuthentication *)auth error:(NSError *)error;
+
+@optional
+- (void)authCancelled;
 
 @end
 

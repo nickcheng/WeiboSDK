@@ -47,6 +47,11 @@ NSString *WeiboOAuth2ErrorDomain = @"com.zhiweibo.OAuth2";
     [viewController presentViewController:navController animated:YES completion:NULL];
 }
 
+- (void)didCancelled {
+  if (_delegate && [_delegate respondsToSelector:@selector(authCancelled)]) {
+      [_delegate authCancelled];
+  }
+}
 
 - (void)didReceiveAuthorizeCode:(NSString *)code
 {

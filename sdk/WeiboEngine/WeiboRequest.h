@@ -28,6 +28,7 @@
     NSError*              _error;
     BOOL                  _sessionDidExpire;
     NSString *_accessToken;
+  NSInteger _tag;
 }
 
 - (id)initWithDelegate:(id<WeiboRequestDelegate>)delegate;
@@ -38,7 +39,7 @@
 @property(nonatomic,retain) NSError* error;
 @property(nonatomic,readonly) BOOL sessionDidExpire;
 @property (nonatomic, copy) NSString *accessToken;
-
+@property (nonatomic, assign) NSInteger tag;
 
 - (void)cancel;
 
