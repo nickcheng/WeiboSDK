@@ -8,8 +8,8 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import "WeiboConfig.h"
-#import "WeiboAuthentication.h"
+
+@class WeiboAuthentication;
 
 @protocol WeiboSignInDelegate <NSObject>
 

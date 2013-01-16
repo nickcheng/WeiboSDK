@@ -8,6 +8,8 @@
 
 #import "WeiboSignIn.h"
 #import "WeiboSignInViewController.h"
+#import "WeiboConfig.h"
+#import "WeiboAuthentication.h"
 #import "ASIHTTPRequest.h"
 #import "ASIFormDataRequest.h"
 #import "JSONKit.h"
