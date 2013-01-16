@@ -9,6 +9,7 @@
 #import "WeiboRequest.h"
 #import "JSONKit.h"
 #import "WeiboAccounts.h"
+#import "WeiboAccount.h"
 #import "ASIHTTPRequest.h"
 #import "ASIFormDataRequest.h"
 
@@ -29,7 +30,7 @@ static const int kGeneralErrorCode = 10000;
 - (id)init {
     self = [super init];
     if (self) {
-        WeiboAccount *account = [[WeiboAccounts shared]currentAccount];
+        WeiboAccount *account = [[WeiboAccounts shared] currentAccount];
         if (account) {
             self.accessToken = account.accessToken;
         }

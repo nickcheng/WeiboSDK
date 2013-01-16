@@ -8,10 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-
-@interface PathHelper : NSObject {
-
-}
+@interface PathHelper : NSObject
 
 + (BOOL)createPathIfNecessary:(NSString*)path;
 

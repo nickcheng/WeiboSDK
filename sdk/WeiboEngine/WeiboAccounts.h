@@ -7,15 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "WeiboAccount.h"
-#import "WeiboAuthentication.h"
-#import "UserQuery.h"
 
+@class WeiboAccount, WeiboAuthentication;
 
-@interface WeiboAccounts : NSObject {    
-    NSMutableDictionary *_accountsDictionary;
-    NSMutableArray *_accounts;
-}
+@interface WeiboAccounts : NSObject
 
 + (WeiboAccounts *)shared;
 
@@ -23,17 +18,11 @@
 @property (nonatomic, readonly) NSMutableArray *accounts;
 
 - (void)loadWeiboAccounts;
-
 - (void)saveWeiboAccounts;
-
 - (void)addAccount:(WeiboAccount *)account;
-
 - (void)addAccountWithAuthentication:(WeiboAuthentication *)auth;
-
 - (void)removeWeiboAccount:(WeiboAccount *)account;
-
 - (void)syncAccount:(WeiboAccount *)account;
-
 - (void)signOut;
 
 @end

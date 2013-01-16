@@ -7,11 +7,24 @@
 //
 
 #import "WeiboAccounts.h"
+#import "WeiboAccount.h"
+#import "WeiboAuthentication.h"
+#import "UserQuery.h"
 #import "PathHelper.h"
 
-static WeiboAccounts *gInstance;
+@implementation WeiboAccounts {
+  NSMutableDictionary *_accountsDictionary;
+  NSMutableArray *_accounts;
+}
 
-@implementation WeiboAccounts
++ (WeiboAccounts *)shared {
+  static WeiboAccounts *sharedInstance = nil;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    sharedInstance = [[WeiboAccounts alloc] init];  // Do any other initialisation stuff in init.
+  });
+  return sharedInstance;
+}
 
 - (id)init {
     self = [super init];
@@ -22,26 +35,9 @@ static WeiboAccounts *gInstance;
     return self;
 }
 
-
-- (void)dealloc {
-    [_accountsDictionary release];
-    [_accounts release];
-    [super dealloc];
-}
-
-+ (WeiboAccounts *)shared {
-
-    if (!gInstance) {
-        gInstance = [[WeiboAccounts alloc] init];
-        [gInstance loadWeiboAccounts];
-    }
-    return gInstance;
-
-}
-
 - (NSString *)getWeiboAccountsStoragePath {
 	NSString *filePath = [[PathHelper documentDirectoryPathWithName:@"db"]
-						  stringByAppendingPathComponent:@"accounts.db"];
+                        stringByAppendingPathComponent:@"accounts.db"];
 	return filePath;
 }
 
@@ -49,14 +45,13 @@ static WeiboAccounts *gInstance;
 	NSString *filePath = [self getWeiboAccountsStoragePath];
 	NSArray *weiboAccounts = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
 	if (!weiboAccounts) {
-		weiboAccounts = [[[NSMutableArray alloc] init] autorelease];
+		weiboAccounts = [[NSMutableArray alloc] init];
 		[NSKeyedArchiver archiveRootObject:weiboAccounts toFile:filePath];
 	}
-	[_accounts release];
-	_accounts = [[NSMutableArray arrayWithArray:weiboAccounts] retain];
-    for (WeiboAccount *account in _accounts) {
-        [_accountsDictionary setObject:account forKey:account.userId];
-    }
+	_accounts = [NSMutableArray arrayWithArray:weiboAccounts];
+  for (WeiboAccount *account in _accounts) {
+    _accountsDictionary[account.userId] = account;
+  }
 }
 
 - (void)saveWeiboAccounts {
@@ -65,94 +60,88 @@ static WeiboAccounts *gInstance;
 }
 
 - (void)syncAccount:(WeiboAccount *)account {
-    UserQuery *query = [UserQuery query];
-    query.completionBlock = ^(WeiboRequest *request, User *user, NSError *error) {
-        if (error) {
-            //
-            NSLog(@"UserQuery error: %@", error);
-        }
-        else {
-            account.screenName = user.screenName;
-            account.profileImageUrl = user.profileLargeImageUrl;
-            [self saveWeiboAccounts];
-        }
-    };
-    [query queryWithUserId:[account.userId longLongValue]];    
+  UserQuery *query = [UserQuery query];
+  query.completionBlock = ^(WeiboRequest *request, User *user, NSError *error) {
+    if (error) {
+      //
+      NSLog(@"UserQuery error: %@", error);
+    } else {
+      account.screenName = user.screenName;
+      account.profileImageUrl = user.profileLargeImageUrl;
+      [self saveWeiboAccounts];
+    }
+  };
+  [query queryWithUserId:[account.userId longLongValue]];
 }
 
 - (void)addAccount:(WeiboAccount *)account {
-    WeiboAccount *addedAccount = [_accountsDictionary objectForKey:account.userId];
-    if (addedAccount) {
-        addedAccount.accessToken = account.accessToken;
-        addedAccount.expirationDate = account.expirationDate;
+  WeiboAccount *addedAccount = _accountsDictionary[account.userId];
+  if (addedAccount) {
+    addedAccount.accessToken = account.accessToken;
+    addedAccount.expirationDate = account.expirationDate;
+  } else {
+    addedAccount = account;
+    if (_accounts.count == 0) {
+      account.selected = YES;
     }
-    else {
-        addedAccount = account;
-        if (_accounts.count == 0) {
-            account.selected = YES;
-        }
-        [_accountsDictionary setObject:account forKey:account.userId];
-        [_accounts insertObject:account atIndex:0];
-    }
-    [self saveWeiboAccounts];
-    if (!account.screenName || !account.profileImageUrl) {
-        [self syncAccount:account];
-    }
+    _accountsDictionary[account.userId] = account;
+    [_accounts insertObject:account atIndex:0];
+  }
+  [self saveWeiboAccounts];
+  if (!account.screenName || !account.profileImageUrl) {
+    [self syncAccount:account];
+  }
 }
 
 - (void)removeWeiboAccount:(WeiboAccount *)account {
-    WeiboAccount *accountToBeRemoved = [_accountsDictionary objectForKey:account.userId];
-    BOOL isCurrentAccount = accountToBeRemoved.selected;
-    if (accountToBeRemoved) {
-        [_accounts removeObject:accountToBeRemoved];
-        [_accountsDictionary removeObjectForKey:account.userId];
+  WeiboAccount *accountToBeRemoved = [_accountsDictionary objectForKey:account.userId];
+  BOOL isCurrentAccount = accountToBeRemoved.selected;
+  if (accountToBeRemoved) {
+    [_accounts removeObject:accountToBeRemoved];
+    [_accountsDictionary removeObjectForKey:account.userId];
+  }
+  if (isCurrentAccount) {
+    if (_accounts.count > 0) {
+      [_accounts[0] setSelected:YES];
     }
-    if (isCurrentAccount) {
-        if (_accounts.count > 0) {
-            [[_accounts objectAtIndex:0] setSelected:YES];
-        }
-    }
-    [self saveWeiboAccounts];
+  }
+  [self saveWeiboAccounts];
 }
 
 - (void)setCurrentAccount:(WeiboAccount *)currentAccount {
-    for (WeiboAccount *account in _accounts) {
-        account.selected = [account.userId isEqualToString:currentAccount.userId];
-    }
-    [self saveWeiboAccounts];
+  for (WeiboAccount *account in _accounts) {
+    account.selected = [account.userId isEqualToString:currentAccount.userId];
+  }
+  [self saveWeiboAccounts];
 }
 
 - (WeiboAccount *)currentAccount {
-    for (WeiboAccount *account in _accounts) {
-        if (account.selected) {
-            return account;
-        }
+  for (WeiboAccount *account in _accounts) {
+    if (account.selected) {
+      return account;
     }
-    //if (_accounts.count > 0) {
-        //return [_accounts objectAtIndex:0];
-    //}
-    return nil;
+  }
+  return nil;
 }
 
 - (void)signOut {
-    WeiboAccount *currentAccount = [self currentAccount];
-    if (currentAccount) {
-        [self removeWeiboAccount:currentAccount];
-    }
+  WeiboAccount *currentAccount = [self currentAccount];
+  if (currentAccount) {
+    [self removeWeiboAccount:currentAccount];
+  }
 }
 
 - (NSMutableArray *)accounts {
-    return _accounts;
+  return _accounts;
 }
 
 - (void)addAccountWithAuthentication:(WeiboAuthentication *)auth {
-    WeiboAccount *account = [[[WeiboAccount alloc]init] autorelease];
-    account.accessToken = auth.accessToken;
-    account.userId = auth.userId;
-    account.expirationDate = auth.expirationDate;
-    
-    [self addAccount:account];
+  WeiboAccount *account = [[WeiboAccount alloc]init];
+  account.accessToken = auth.accessToken;
+  account.userId = auth.userId;
+  account.expirationDate = auth.expirationDate;
+  
+  [self addAccount:account];
 }
-
 
 @end

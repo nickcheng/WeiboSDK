@@ -8,20 +8,13 @@
 
 #import <Foundation/Foundation.h>
 
-@interface WeiboAccount : NSObject {
-    NSString *_userId;
-    NSString *_accessToken;
-    NSDate *_expirationDate;
-    NSString *_screenName;
-    NSString *_profileImageUrl;
-    BOOL _selected;
-}
+@interface WeiboAccount : NSObject
 
-@property (nonatomic, copy) NSString *userId;
-@property (nonatomic, copy) NSString *accessToken;
-@property (nonatomic, retain) NSDate *expirationDate;
-@property (nonatomic, copy) NSString *screenName;
-@property (nonatomic, copy) NSString *profileImageUrl;
+@property (nonatomic, strong) NSString *userId;
+@property (nonatomic, strong) NSString *accessToken;
+@property (nonatomic, strong) NSDate *expirationDate;
+@property (nonatomic, strong) NSString *screenName;
+@property (nonatomic, strong) NSString *profileImageUrl;
 @property (nonatomic, assign) BOOL selected;
 
 @end
