@@ -10,4 +10,5 @@
 #define kWeiboAccessTokenURL @"https://api.weibo.com/oauth2/access_token"
 #define kWeiboAPIBaseUrl @"https://api.weibo.com/2/"
 #define kWeiboOAuth2ErrorDomain @"com.zhiweibo.OAuth2"
-
+#define kWeiboAPIErrorDomain @"com.zhiweibo.api"
+#define kWeiboUserAgent @"ZhiWeibo"
