@@ -20,7 +20,6 @@
 
 @end
 
-
 enum {
     kWeiboOAuth2ErrorWindowClosed          = -1000,
     kWeiboOAuth2ErrorAuthorizationFailed   = -1001,
@@ -31,13 +30,10 @@ enum {
     kWeiboOAuth2ErrorAccessDenied = -1006,
 };
 
-@interface WeiboSignIn : NSObject {
-    WeiboAuthentication *_authentication;
-    id<WeiboSignInDelegate> _delegate;
-}
+@interface WeiboSignIn : NSObject
 
-@property (nonatomic, retain) WeiboAuthentication *authentication;
-@property (nonatomic, assign) id<WeiboSignInDelegate> delegate;
+@property (nonatomic, strong) WeiboAuthentication *authentication;
+@property (weak) id<WeiboSignInDelegate> delegate;
 
 - (void)signInOnViewController:(UIViewController *)viewController;
 

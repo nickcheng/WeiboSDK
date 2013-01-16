@@ -10,23 +10,9 @@
 #import "WeiboAuthentication.h"
 #import "MBProgressHUD.h"
 
-@class MBProgressHUD;
+@interface WeiboSignInViewController : UIViewController<UIWebViewDelegate, MBProgressHUDDelegate>
 
-@interface WeiboSignInViewController : UIViewController<UIWebViewDelegate, MBProgressHUDDelegate> {
-    UIWebView *_webView;
-    UIBarButtonItem *_cancelButton;
-    UIBarButtonItem *_stopButton;
-    UIBarButtonItem *_refreshButton;
-    
-    WeiboAuthentication *_authentication;
-    id _delegate;
-    
-    MBProgressHUD *HUD;
-    
-    BOOL _closed;
-}
-
-@property (nonatomic, retain) WeiboAuthentication *authentication;
-@property (nonatomic, assign) id delegate;
+@property (nonatomic, strong) WeiboAuthentication *authentication;
+@property (weak) id delegate;
 
 @end
