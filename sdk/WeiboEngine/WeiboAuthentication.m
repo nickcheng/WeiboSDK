@@ -8,7 +8,19 @@
 
 #import "WeiboAuthentication.h"
 
-@implementation WeiboAuthentication
+@implementation WeiboAuthentication {
+  NSString *_appKey;
+  NSString *_appSecret;
+  NSString *_redirectURI;
+  
+  NSString *_authorizeURL;
+  NSString *_accessTokenURL;
+  
+  NSString *_accessToken;
+  NSString *_userId;
+  NSDate *_expirationDate;
+}
+
 @synthesize appKey = _appKey;
 @synthesize appSecret = _appSecret;
 @synthesize redirectURI = _redirectURI;
@@ -22,37 +34,21 @@
 
 - (id)initWithAuthorizeURL:(NSString *)authorizeURL accessTokenURL:(NSString *)accessTokenURL
                     appKey:(NSString *)appKey appSecret:(NSString *)appSecret {
-    self = [super init];
-    if (self) {
-        self.authorizeURL = authorizeURL;
-        self.accessTokenURL = accessTokenURL;
-        self.appKey = appKey;
-        self.appSecret = appSecret;
-        self.redirectURI = @"http://";
-    }
-    return self;
-}
-
-- (void)dealloc
-{
-    [_appKey release];
-    [_appSecret release];
-    [_redirectURI release];
-    
-    [_authorizeURL release];
-    [_accessTokenURL release];
-    
-    [_accessToken release];
-    [_userId release];
-    [_expirationDate release];
-    
-    [super dealloc];
+  self = [super init];
+  if (self) {
+    _authorizeURL = authorizeURL;
+    _accessTokenURL = accessTokenURL;
+    _appKey = appKey;
+    _appSecret = appSecret;
+    _redirectURI = @"http://";
+  }
+  return self;
 }
 
 - (NSString *)authorizeRequestUrl {
-    return [NSString stringWithFormat:@"%@?client_id=%@&response_type=code&redirect_uri=%@&display=mobile", self.authorizeURL,
-            [self.appKey stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
-            [self.redirectURI stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+  return [NSString stringWithFormat:@"%@?client_id=%@&response_type=code&redirect_uri=%@&display=mobile", self.authorizeURL,
+          [self.appKey stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
+          [self.redirectURI stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
 }
 
 @end

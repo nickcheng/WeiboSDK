@@ -8,33 +8,21 @@
 
 #import <Foundation/Foundation.h>
 
-@interface WeiboAuthentication : NSObject {
-    NSString    *_appKey;
-    NSString    *_appSecret;
-    NSString    *_redirectURI;
-    
-    NSString *_authorizeURL;
-    NSString *_accessTokenURL;
-    
-    NSString *_accessToken;
-    NSString *_userId;
-    NSDate *_expirationDate;
-}
+@interface WeiboAuthentication : NSObject
+
+@property (nonatomic, strong) NSString *appKey;
+@property (nonatomic, strong) NSString *appSecret;
+@property (nonatomic, strong) NSString *redirectURI;
+
+@property (nonatomic, strong) NSString *authorizeURL;
+@property (nonatomic, strong) NSString *accessTokenURL;
+
+@property (nonatomic, strong) NSString *accessToken;
+@property (nonatomic, strong) NSString *userId;
+@property (nonatomic, strong) NSDate *expirationDate;
 
 - (id)initWithAuthorizeURL:(NSString *)authorizeURL accessTokenURL:(NSString *)accessTokenURL
                     appKey:(NSString *)appKey appSecret:(NSString *)appSecret;
-
-@property (nonatomic, copy) NSString *appKey;
-@property (nonatomic, copy) NSString *appSecret;
-@property (nonatomic, copy) NSString *redirectURI;
-
-@property (nonatomic, copy) NSString *authorizeURL;
-@property (nonatomic, copy) NSString *accessTokenURL;
-
-@property (nonatomic, copy) NSString *accessToken;
-@property (nonatomic, copy) NSString *userId;
-@property (nonatomic, retain) NSDate *expirationDate;
-
 - (NSString *)authorizeRequestUrl;
 
 @end
