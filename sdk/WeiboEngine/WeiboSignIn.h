@@ -35,6 +35,7 @@ enum {
 @property (nonatomic, strong) WeiboAuthentication *authentication;
 @property (weak) id<WeiboSignInDelegate> delegate;
 
+- (id)initWithAppKey:(NSString *)appKey andAppSecret:(NSString *)appSecret;
 - (void)signInOnViewController:(UIViewController *)viewController;
 
 @end

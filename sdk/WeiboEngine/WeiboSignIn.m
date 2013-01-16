@@ -22,13 +22,13 @@ static NSString *WeiboOAuth2ErrorDomain = @"com.zhiweibo.OAuth2";
 @synthesize authentication = _authentication;
 @synthesize delegate;
 
-- (id)init {
+- (id)initWithAppKey:(NSString *)appKey andAppSecret:(NSString *)appSecret {
   self = [super init];
   if (self) {
     _authentication = [[WeiboAuthentication alloc]initWithAuthorizeURL:kWeiboAuthorizeURL
                                                         accessTokenURL:kWeiboAccessTokenURL
-                                                                AppKey:kAppKey
-                                                             appSecret:kAppSecret];
+                                                                appKey:appKey
+                                                             appSecret:appSecret];
     
   }
   return self;
