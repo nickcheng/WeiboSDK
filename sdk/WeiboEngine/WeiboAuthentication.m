@@ -8,8 +8,6 @@
 
 #import "WeiboAuthentication.h"
 
-
-
 @implementation WeiboAuthentication
 @synthesize appKey = _appKey;
 @synthesize appSecret = _appSecret;
@@ -23,7 +21,7 @@
 @synthesize expirationDate = _expirationDate;
 
 - (id)initWithAuthorizeURL:(NSString *)authorizeURL accessTokenURL:(NSString *)accessTokenURL
-                    AppKey:(NSString *)appKey appSecret:(NSString *)appSecret {
+                    appKey:(NSString *)appKey appSecret:(NSString *)appSecret {
     self = [super init];
     if (self) {
         self.authorizeURL = authorizeURL;
