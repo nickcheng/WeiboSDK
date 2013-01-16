@@ -10,14 +10,9 @@
 #import "WeiboSignInViewController.h"
 #import "WeiboConfig.h"
 #import "WeiboAuthentication.h"
-#import "ASIHTTPRequest.h"
-#import "ASIFormDataRequest.h"
-#import "JSONKit.h"
-
-static NSString *WeiboOAuth2ErrorDomain = @"com.zhiweibo.OAuth2";
+#import "AFNetworking.h"
 
 @implementation WeiboSignIn {
-  
   WeiboAuthentication *_authentication;
 }
 
@@ -54,12 +49,11 @@ static NSString *WeiboOAuth2ErrorDomain = @"com.zhiweibo.OAuth2";
   // if it was not canceled
   if (![code isEqualToString:@"21330"]) {
     [self accessTokenWithAuthorizeCode:code];
-  }
-  else {
+  } else {
     NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
                               @"Access denied", NSLocalizedDescriptionKey,
                               nil];
-    NSError *error = [NSError errorWithDomain:WeiboOAuth2ErrorDomain
+    NSError *error = [NSError errorWithDomain:kWeiboOAuth2ErrorDomain
                                          code:kWeiboOAuth2ErrorAccessDenied
                                      userInfo:userInfo];
     if (self.delegate) {
@@ -69,57 +63,56 @@ static NSString *WeiboOAuth2ErrorDomain = @"com.zhiweibo.OAuth2";
 }
 
 - (void)accessTokenWithAuthorizeCode:(NSString *)code {
-  ASIFormDataRequest *request = [ASIFormDataRequest requestWithURL:[NSURL URLWithString:self.authentication.accessTokenURL]];
-  [request addPostValue:self.authentication.appKey forKey:@"client_id"];
-  [request addPostValue:self.authentication.appSecret forKey:@"client_secret"];
-  [request addPostValue:self.authentication.redirectURI forKey:@"redirect_uri"];
-  [request addPostValue:code forKey:@"code"];
-  [request addPostValue:@"authorization_code" forKey:@"grant_type"];
-  [request setDelegate:self];
-  [request startAsynchronous];
-}
-
-- (void)requestFinished:(ASIHTTPRequest *)request {
-  JSONDecoder *decoder = [JSONDecoder decoder];
-  id jsonObject = [decoder mutableObjectWithData:[request responseData]];
-  if ([jsonObject isKindOfClass:[NSDictionary class]]) {
-    NSDictionary *dict = (NSDictionary *)jsonObject;
-    
-    NSString *accessToken = [dict objectForKey:@"access_token"];
-    NSString *userId = [dict objectForKey:@"uid"];
-    int expiresIn = [[dict objectForKey:@"expires_in"] intValue];
-    
-    if (accessToken.length > 0 && userId.length > 0) {
-      self.authentication.accessToken = accessToken;
-      self.authentication.userId = userId;
-      self.authentication.expirationDate = [NSDate dateWithTimeIntervalSinceNow:expiresIn];
+  //
+  AFHTTPClient *httpClient = [[AFHTTPClient alloc] initWithBaseURL:[NSURL URLWithString:kWeiboAPIBaseUrl]];
+  NSDictionary *params = @{
+    @"client_id" : self.authentication.appKey,
+    @"client_secret": self.authentication.appSecret,
+    @"redirect_uri": self.authentication.redirectURI,
+    @"code": code,
+    @"grant_type": @"authorization_code"
+  };
+  NSMutableURLRequest *request = [httpClient requestWithMethod:@"POST" path:self.authentication.accessTokenURL parameters:params];
+  AFHTTPRequestOperation *operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
+  [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+    //
+    NSError *err;
+    NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:operation.responseData options:NSJSONReadingMutableContainers error:&err];
+    if (err) {
+      NSDictionary *userInfo = @{NSLocalizedDescriptionKey: [NSString stringWithFormat:@"Failed to parse response data: \r\n%@", err]};
+      NSError *error = [NSError errorWithDomain:kWeiboOAuth2ErrorDomain
+                                           code:kWeiboOAuth2ErrorTokenUnavailable
+                                       userInfo:userInfo];
+      if (self.delegate)
+        [self.delegate finishedWithAuth:self.authentication error:error];
+    } else {
+      NSString *accessToken = [dict objectForKey:@"access_token"];
+      NSString *userId = [dict objectForKey:@"uid"];
+      int expiresIn = [[dict objectForKey:@"expires_in"] intValue];
       
-      if (self.delegate) {
-        [self.delegate finishedWithAuth:self.authentication error:nil];
+      if (accessToken.length > 0 && userId.length > 0) {
+        self.authentication.accessToken = accessToken;
+        self.authentication.userId = userId;
+        self.authentication.expirationDate = [NSDate dateWithTimeIntervalSinceNow:expiresIn];
+        
+        if (self.delegate)
+          [self.delegate finishedWithAuth:self.authentication error:nil];
+        return;
       }
-      return;
     }
-  }
-  
-  NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
-                            [NSString stringWithFormat:@"Failed to parse response data: \r\n%@",[request responseString]],NSLocalizedDescriptionKey,
-                            nil];
-  NSError *error = [NSError errorWithDomain:WeiboOAuth2ErrorDomain
-                                       code:kWeiboOAuth2ErrorTokenUnavailable
-                                   userInfo:userInfo];
-  if (self.delegate) {
-    [self.delegate finishedWithAuth:self.authentication error:error];
-  }
-}
-
-- (void)requestFailed:(ASIHTTPRequest *)request {
-  NSDictionary *userInfo = [request error].userInfo;
-  NSError *error = [NSError errorWithDomain:WeiboOAuth2ErrorDomain
+    
+  } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+    //
+    NSDictionary *userInfo = error.userInfo;
+    NSError *err = [NSError errorWithDomain:kWeiboOAuth2ErrorDomain
                                        code:kWeiboOAuth2ErrorAccessTokenRequestFailed
                                    userInfo:userInfo];
-  if (self.delegate) {
-    [self.delegate finishedWithAuth:self.authentication error:error];
-  }
+    if (self.delegate) {
+      [self.delegate finishedWithAuth:self.authentication error:err];
+    }
+  }];
+
+  [operation start];
 }
 
 @end
