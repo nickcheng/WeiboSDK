@@ -7,10 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "WeiboAuthentication.h"
-#import "MBProgressHUD.h"
 
-@interface WeiboSignInViewController : UIViewController<UIWebViewDelegate, MBProgressHUDDelegate>
+@class WeiboAuthentication;
+
+@interface WeiboSignInViewController : UIViewController
 
 @property (nonatomic, strong) WeiboAuthentication *authentication;
 @property (weak) id delegate;

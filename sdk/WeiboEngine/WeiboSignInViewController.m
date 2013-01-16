@@ -8,6 +8,11 @@
 
 #import "WeiboSignInViewController.h"
 #import "MBProgressHUD.h"
+#import "WeiboAuthentication.h"
+
+@interface WeiboSignInViewController () <UIWebViewDelegate, MBProgressHUDDelegate>
+
+@end
 
 @implementation WeiboSignInViewController {
   UIWebView *_webView;
