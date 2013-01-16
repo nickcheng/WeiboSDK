@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "WeiboConfig.h"
 
 @class WeiboRequest;
 @class ASIHTTPRequest;
@@ -20,35 +19,21 @@
 
 @end
 
-@interface WeiboRequest : NSObject {
-    ASIHTTPRequest *_request;
-    
-    id<WeiboRequestDelegate> _delegate;
-    
-    NSError*              _error;
-    BOOL                  _sessionDidExpire;
-    NSString *_accessToken;
-  NSInteger _tag;
-}
+@interface WeiboRequest : NSObject
 
 - (id)initWithDelegate:(id<WeiboRequestDelegate>)delegate;
-
 - (id)initWithAccessToken:(NSString *)accessToken delegate:(id<WeiboRequestDelegate>)delegate;
 
-@property(nonatomic,assign) id<WeiboRequestDelegate> delegate;
-@property(nonatomic,retain) NSError* error;
-@property(nonatomic,readonly) BOOL sessionDidExpire;
-@property (nonatomic, copy) NSString *accessToken;
+@property(weak) id<WeiboRequestDelegate> delegate;
+@property(nonatomic,strong) NSError* error;
+@property(nonatomic, readonly, assign) BOOL sessionDidExpire;
+@property (nonatomic, strong) NSString *accessToken;
 @property (nonatomic, assign) NSInteger tag;
 
 - (void)cancel;
+- (void)getFromUrl:(NSString *)url params:(NSMutableDictionary *)params;
+- (void)postToUrl:(NSString *)url params:(NSMutableDictionary *)params;
+- (void)getFromPath:(NSString *)apiPath params:(NSMutableDictionary *)params;
+- (void)postToPath:(NSString *)apiPath params:(NSMutableDictionary *)params;
 
-- (void)getFromUrl:(NSString *)url
-            params:(NSMutableDictionary *)params;
-- (void)postToUrl:(NSString *)url
-           params:(NSMutableDictionary *)params;
-- (void)getFromPath:(NSString *)apiPath
-             params:(NSMutableDictionary *)params;
-- (void)postToPath:(NSString *)apiPath
-            params:(NSMutableDictionary *)params;
 @end
