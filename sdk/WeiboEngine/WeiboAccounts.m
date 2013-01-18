@@ -80,7 +80,6 @@
     addedAccount.accessToken = account.accessToken;
     addedAccount.expirationDate = account.expirationDate;
   } else {
-    addedAccount = account;
     if (_accounts.count == 0) {
       account.selected = YES;
     }
