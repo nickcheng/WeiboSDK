@@ -11,9 +11,7 @@
 #import "WeiboAccount.h"
 #import "WeiboConfig.h"
 #import "NSStringAdditions.h"
-#import "ASIHTTPRequest.h"
-#import "ASIFormDataRequest.h"
-#import "JSONKit.h"
+#import "AFNetworking.h"
 
 static const int kGeneralErrorCode = 10000;
 
@@ -22,8 +20,8 @@ static const int kGeneralErrorCode = 10000;
 @end
 
 @implementation WeiboRequest {
-  ASIHTTPRequest *_request;
-  id<WeiboRequestDelegate> _delegate;
+//  ASIHTTPRequest *_request;
+  AFHTTPRequestOperation *_operation;
   NSError *_error;
   BOOL _sessionDidExpire;
   NSString *_accessToken;
@@ -36,8 +34,7 @@ static const int kGeneralErrorCode = 10000;
 @synthesize tag = _tag;
 
 - (id)init {
-  self = [super init];
-  if (self) {
+  if (self = [super init]) {
     WeiboAccount *account = [[WeiboAccounts shared] currentAccount];
     if (account) {
       _accessToken = account.accessToken;
@@ -47,24 +44,18 @@ static const int kGeneralErrorCode = 10000;
 }
 
 - (id)initWithDelegate:(id<WeiboRequestDelegate>)dele {
-  self = [self init];
-  if (self) {
+  if (self = [self init]) {
     self.delegate = dele;
   }
   return self;
 }
 
 - (id)initWithAccessToken:(NSString *)accessToken delegate:(id<WeiboRequestDelegate>)dele {
-  self = [super init];
-  if (self) {
+  if (self = [super init]) {
     _accessToken = accessToken;
     self.delegate = dele;
   }
   return self;
-}
-
-- (void)dealloc {
-	[_request clearDelegatesAndCancel];
 }
 
 + (NSString*)serializeURL:(NSString *)baseUrl params:(NSDictionary *)params {
@@ -73,54 +64,45 @@ static const int kGeneralErrorCode = 10000;
   NSString* queryPrefix = parsedURL.query ? @"&" : @"?";
   
   NSMutableArray* pairs = [NSMutableArray array];
-  for (NSString* key in [params keyEnumerator]) {
-    if (([[params objectForKey:key] isKindOfClass:[UIImage class]])
-        ||([[params objectForKey:key] isKindOfClass:[NSData class]])) {
+  for (NSString* key in params.allKeys) {
+    if (([params[key] isKindOfClass:[UIImage class]])
+        ||([params[key] isKindOfClass:[NSData class]])) {
       continue;
     }
     
     NSString* escaped_value = [params[key] URLEncodedString];
-    
     [pairs addObject:[NSString stringWithFormat:@"%@=%@", key, escaped_value]];
   }
-  NSString* query = [pairs componentsJoinedByString:@"&"];
-  
+  NSString* query = [pairs componentsJoinedByString:@"&"];  
   return [NSString stringWithFormat:@"%@%@%@", baseUrl, queryPrefix, query];
 }
 
 - (id)formError:(NSInteger)code userInfo:(NSDictionary *) errorData {
-  return [NSError errorWithDomain:kWeiboAPIErrorDomain code:code userInfo:errorData];
-  
+  return [NSError errorWithDomain:kWeiboAPIErrorDomain code:code userInfo:errorData];  
 }
 
-- (id)parseJsonResponse:(NSData *)data error:(NSError **)error {
-	NSError *parseError = nil;
-  
-  JSONDecoder *parser = [JSONDecoder decoder];
-  id result = [parser mutableObjectWithData:data error:&parseError];
-  
-	if (parseError)
-  {
-    if (error != nil)
-    {
-      *error = [self formError:kGeneralErrorCode
-                      userInfo:parseError.userInfo];
-    }
-	}
-  
-	if ([result isKindOfClass:[NSDictionary class]])
-	{
-		if ([result objectForKey:@"error_code"] != nil && [[result objectForKey:@"error_code"] intValue] != 200)
-		{
-			if (error != nil)
-			{
-				*error = [self formError:[[result objectForKey:@"error_code"] intValue] userInfo:result];
-			}
-		}
-	}
-	
-	return result;
-}
+//- (id)parseJsonResponse:(NSData *)data error:(NSError **)error {
+//	NSError *parseError = nil;
+//  
+//  JSONDecoder *parser = [JSONDecoder decoder];
+//  id result = [parser mutableObjectWithData:data error:&parseError];
+//  
+//	if (parseError) {
+//    if (error != nil) {
+//      *error = [self formError:kGeneralErrorCode userInfo:parseError.userInfo];
+//    }
+//	}
+//  
+//	if ([result isKindOfClass:[NSDictionary class]]) {
+//		if ([result objectForKey:@"error_code"] != nil && [[result objectForKey:@"error_code"] intValue] != 200) {
+//			if (error != nil) {
+//				*error = [self formError:[[result objectForKey:@"error_code"] intValue] userInfo:result];
+//			}
+//		}
+//	}
+//	
+//	return result;
+//}
 
 - (void)failWithError:(NSError *)error {
   if (   [error code] == 21301
@@ -130,38 +112,37 @@ static const int kGeneralErrorCode = 10000;
       || [error code] == 21317
       || [error code] == 21332) {
     self.sessionDidExpire = YES;
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"authError"
-                                                        object:error];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"authError" object:error];
   }
-  if ([_delegate respondsToSelector:@selector(request:didFailWithError:)]) {
-    [_delegate request:self didFailWithError:error];
+  if ([self.delegate respondsToSelector:@selector(request:didFailWithError:)]) {
+    [self.delegate request:self didFailWithError:error];
   }
 }
 
 - (void)loadSuccess:(id)result {
-  if ([_delegate respondsToSelector:@selector(request:didLoad:)]) {
-    [_delegate request:self didLoad:result];
+  if ([self.delegate respondsToSelector:@selector(request:didLoad:)]) {
+    [self.delegate request:self didLoad:result];
   }
 }
 
 - (void)handleResponseData:(NSData *)data {
-  NSError* error = nil;
-  
-  id result = [self parseJsonResponse:data error:&error];
+  NSError *error;
+  NSDictionary *result = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&error];
   self.error = error;
   
-  if ([_delegate respondsToSelector:@selector(request:didLoad:)] ||
-      [_delegate respondsToSelector:@selector(request:didFailWithError:)]) {
-    
+  if ([self.delegate respondsToSelector:@selector(request:didLoad:)] ||
+      [self.delegate respondsToSelector:@selector(request:didFailWithError:)]) {
     if (error) {
-      [self performSelectorOnMainThread:@selector(failWithError:) withObject:error waitUntilDone:YES];
+      dispatch_async(dispatch_get_main_queue(),^(void) {
+        [self failWithError:error];
+      });
     }
     else {
-      [self performSelectorOnMainThread:@selector(loadSuccess:) withObject:result waitUntilDone:YES];
+      dispatch_async(dispatch_get_main_queue(),^(void) {
+        [self loadSuccess:result];
+      });
     }
-    
   }
-  
 }
 
 - (void)processParams:(NSMutableDictionary *)params {
@@ -169,28 +150,41 @@ static const int kGeneralErrorCode = 10000;
     params = [NSMutableDictionary dictionary];
   }
   if (self.accessToken) {
-    [params setObject:self.accessToken forKey:@"access_token"];
+    params[@"access_token"] = self.accessToken;
   }
 }
 
-- (void)getFromPath:(NSString *)apiPath
-             params:(NSMutableDictionary *)params {
+- (void)getFromPath:(NSString *)apiPath params:(NSMutableDictionary *)params {
   NSString * fullURL = [kWeiboAPIBaseUrl stringByAppendingString:apiPath];
   return [self getFromUrl:fullURL params:params];
 }
 
-- (void)getFromUrl:(NSString *)url
-            params:(NSMutableDictionary *)params {
+- (void)getFromUrl:(NSString *)url params:(NSMutableDictionary *)params {
+  //
   [self processParams:params];
   
+  //
   NSString* urlString = [[self class] serializeURL:url params:params];
-  [_request clearDelegatesAndCancel];
-  _request = [ASIHTTPRequest requestWithURL:[NSURL URLWithString:urlString]];
-  [_request setDelegate:self];
-  [_request setValidatesSecureCertificate:NO];
-  [_request addRequestHeader:@"User-Agent" value:kWeiboUserAgent];
+  AFHTTPClient *httpClient = [[AFHTTPClient alloc] initWithBaseURL:[NSURL URLWithString:kWeiboAPIBaseUrl]];
+  NSMutableURLRequest *request = [httpClient requestWithMethod:@"GET" path:urlString parameters:nil];
+  [request addValue:kWeiboUserAgent forHTTPHeaderField:@"User-Agent"];
   
-  [_request startAsynchronous];
+  if (_operation) {
+    [_operation cancel];
+    _operation = nil;
+  }
+  _operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
+  __weak WeiboRequest *tempSelf = self;
+  [_operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+      [tempSelf handleResponseData:operation.responseData];
+    });
+  } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+    NSLog(@"_request error!!!, Reason:%@, errordetail:%@", error.localizedFailureReason, error.localizedDescription);
+    [tempSelf failWithError:error];
+  }];
+  
+  [_operation start];
 }
 
 - (NSString *)contentTypeForImageData:(NSData *)data {
@@ -211,73 +205,72 @@ static const int kGeneralErrorCode = 10000;
   return nil;
 }
 
-- (void)postToPath:(NSString *)apiPath
-            params:(NSMutableDictionary *)params {
+- (void)postToPath:(NSString *)apiPath params:(NSMutableDictionary *)params {
   NSString * fullURL = [kWeiboAPIBaseUrl stringByAppendingString:apiPath];
   return [self postToUrl:fullURL params:params];
 }
 
-- (void)postToUrl:(NSString *)url
-           params:(NSMutableDictionary *)params {
+- (void)postToUrl:(NSString *)url params:(NSMutableDictionary *)params {
+  //
   [self processParams:params];
   
-  [_request clearDelegatesAndCancel];
-  
-  ASIFormDataRequest *request = [ASIFormDataRequest requestWithURL:[NSURL URLWithString:url]];
-  [request setDelegate:self];
-  [request setValidatesSecureCertificate:NO];
-  [request addRequestHeader:@"User-Agent" value:kWeiboUserAgent];
-  
-  for (NSString* key in [params keyEnumerator]) {
-    id val = [params objectForKey:key];
+  //
+  NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+  NSString *dataKey = @"";
+  for (NSString *key in params.allKeys) {
+    id val = params[key];
     if ([val isKindOfClass:[NSData class]]) {
-      NSString *contentType = [self contentTypeForImageData:val];
-      if (contentType) {
-        [request addData:val withFileName:[contentType stringByReplacingOccurrencesOfString:@"/" withString:@" from zhiweibo."] andContentType:contentType forKey:key];
-      }
-      else {
-        [request addData:val forKey:key];
-      }
-    }
-    else if ([val isKindOfClass:[UIImage class]]) {
-      NSData* imageData = UIImagePNGRepresentation((UIImage*)val);
-      [request addData:imageData withFileName:@"image from zhiweibo.png" andContentType:@"image/png" forKey:key];
-    }
-    else {
-      [request addPostValue:val forKey:key];
-    }
+      if ([self contentTypeForImageData:val])
+        dataKey = key;
+      else
+        [dict setObject:val forKey:key];
+    } else if ([val isKindOfClass:[UIImage class]])
+      dataKey = key;
+    else
+      [dict setObject:val forKey:key];
   }
   
-  [request startAsynchronous];
+  //
+  AFHTTPClient *httpClient = [[AFHTTPClient alloc] initWithBaseURL:[NSURL URLWithString:kWeiboAPIBaseUrl]];
+  NSMutableURLRequest *request = [httpClient multipartFormRequestWithMethod:@"POST" path:url parameters:dict constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
+    if (dataKey.length > 0) {
+      NSData *data;
+      if ([params[dataKey] isKindOfClass:[UIImage class]]) {
+        data = UIImagePNGRepresentation((UIImage *)params[dataKey]);
+        [formData appendPartWithFileData:data name:kWeiboUploadImageName fileName:kWeiboUploadImageName mimeType:@"image/png"];
+      } else {
+        data = params[dataKey];
+        NSString *contentType = [self contentTypeForImageData:params[dataKey]];
+        NSString *fn = [contentType stringByReplacingOccurrencesOfString:@"/" withString:kWeiboUploadImageName];
+        [formData appendPartWithFileData:data name:fn fileName:fn mimeType:contentType];
+      }
+    }
+  }];
+  [request addValue:kWeiboUserAgent forHTTPHeaderField:@"User-Agent"];
   
-  _request = request;
-}
-
-- (void)cancel
-{
-  if (_request) {
-		[_request clearDelegatesAndCancel];
-		_request = nil;
+  if (_operation) {
+    [_operation cancel];
+    _operation = nil;
   }
-	
+  _operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
+  __weak WeiboRequest *tempSelf = self;
+  [_operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+      [tempSelf handleResponseData:operation.responseData];
+    });
+  } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+    NSLog(@"_request error!!!, Reason:%@, errordetail:%@", error.localizedFailureReason, error.localizedDescription);
+    [tempSelf failWithError:error];
+  }];
+  
+  [_operation start];
 }
 
-- (void)requestFinished:(ASIHTTPRequest *)request
-{
-  [self performSelectorInBackground:@selector(handleResponseData:) withObject:[request responseData]];
-  _request = nil;
-}
-
-- (void)requestFailed:(ASIHTTPRequest *)request
-{
-	NSError *error = [request error];
-  NSLog(@"_request error!!!, Reason:%@, errordetail:%@"
-        , [error localizedFailureReason], [error localizedDescription]);
-  
-  [self failWithError:error];
-	
-  _request = nil;
-  
+- (void)cancel {
+  if (_operation) {
+    [_operation cancel];
+    _operation = nil;
+  }
 }
 
 @end
