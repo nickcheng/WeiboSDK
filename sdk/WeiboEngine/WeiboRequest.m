@@ -232,20 +232,23 @@ static const int kGeneralErrorCode = 10000;
   
   //
   AFHTTPClient *httpClient = [[AFHTTPClient alloc] initWithBaseURL:[NSURL URLWithString:kWeiboAPIBaseUrl]];
-  NSMutableURLRequest *request = [httpClient multipartFormRequestWithMethod:@"POST" path:url parameters:dict constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
-    if (dataKey.length > 0) {
+  NSMutableURLRequest *request;
+  if (dataKey.length > 0) {
+    request = [httpClient multipartFormRequestWithMethod:@"POST" path:url parameters:dict constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
       NSData *data;
       if ([params[dataKey] isKindOfClass:[UIImage class]]) {
         data = UIImagePNGRepresentation((UIImage *)params[dataKey]);
-        [formData appendPartWithFileData:data name:kWeiboUploadImageName fileName:kWeiboUploadImageName mimeType:@"image/png"];
+        [formData appendPartWithFileData:data name:dataKey fileName:kWeiboUploadImageName mimeType:@"image/png"];
       } else {
         data = params[dataKey];
         NSString *contentType = [self contentTypeForImageData:params[dataKey]];
         NSString *fn = [contentType stringByReplacingOccurrencesOfString:@"/" withString:kWeiboUploadImageName];
-        [formData appendPartWithFileData:data name:fn fileName:fn mimeType:contentType];
+        [formData appendPartWithFileData:data name:dataKey fileName:fn mimeType:contentType];
       }
-    }
-  }];
+    }];
+  } else {
+    request = [httpClient requestWithMethod:@"POST" path:url parameters:dict];
+  }
   [request addValue:kWeiboUserAgent forHTTPHeaderField:@"User-Agent"];
   
   if (_operation) {
