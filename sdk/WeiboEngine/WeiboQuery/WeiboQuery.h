@@ -7,18 +7,15 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "WeiboRequest.h"
 
-@interface WeiboQuery : NSObject<WeiboRequestDelegate>  {
-    
-    WeiboRequest *_request;
+@class WeiboRequest;
+
+@interface WeiboQuery : NSObject {
+  WeiboRequest *_request;
 }
 
 - (void)cancel;
-
-- (void)getWithAPIPath:(NSString *)apiPath
-                params:(NSMutableDictionary *)params;
-- (void)postWithAPIPath:(NSString *)apiPath
-                 params:(NSMutableDictionary *)params;
+- (void)getWithAPIPath:(NSString *)apiPath params:(NSMutableDictionary *)params;
+- (void)postWithAPIPath:(NSString *)apiPath params:(NSMutableDictionary *)params;
 
 @end

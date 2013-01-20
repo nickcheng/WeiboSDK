@@ -7,52 +7,48 @@
 //
 
 #import "UserQuery.h"
+#import "WeiboRequest.h"
+#import "User.h"
 
-@implementation UserQuery
+@implementation UserQuery {
+  void (^_completionBlock)(WeiboRequest *request, User *user, NSError *error);
+}
+
 @synthesize completionBlock = _completionBlock;
 
-
 - (id)init {
-    self = [super init];
-    if (self) {
-        
-    }
-    return self;
+  self = [super init];
+  if (self) {
+  }
+  return self;
 }
-
 
 + (UserQuery *)query {
-    return [[[UserQuery alloc]init]autorelease];
+  return [[UserQuery alloc]init];
 }
-
-- (void)dealloc {
-    [_completionBlock release];
-    [super dealloc];
-}
-
 
 - (void)queryWithUserId:(long long)userId {
-    [super getWithAPIPath:@"users/show.json"
-                   params:[NSMutableDictionary dictionaryWithObject:[NSString stringWithFormat:@"%lld", userId] forKey:@"uid"]];
+  [super getWithAPIPath:@"users/show.json"
+                 params:[NSMutableDictionary dictionaryWithObject:[NSString stringWithFormat:@"%lld", userId] forKey:@"uid"]];
 }
 
 - (void)queryWithScreenName:(NSString *)screenName {
-    [super getWithAPIPath:@"users/show.json"
-                   params:[NSMutableDictionary dictionaryWithObject:screenName forKey:@"screen_name"]];
+  [super getWithAPIPath:@"users/show.json"
+                 params:[NSMutableDictionary dictionaryWithObject:screenName forKey:@"screen_name"]];
 }
 
 
 - (void)requestFailedWithError:(NSError *)error {
-    if (_completionBlock) {
-        _completionBlock(_request, nil, error);
-    }
+  if (_completionBlock) {
+    _completionBlock(_request, nil, error);
+  }
 }
 
 - (void)requestFinishedWithObject:(id)object {
-    User *user = [[[User alloc]initWithJsonDictionary:object]autorelease];
-    if (_completionBlock) {
-        _completionBlock(_request, user, nil);
-    }
+  User *user = [[User alloc]initWithJsonDictionary:object];
+  if (_completionBlock) {
+    _completionBlock(_request, user, nil);
+  }
 }
 
 @end

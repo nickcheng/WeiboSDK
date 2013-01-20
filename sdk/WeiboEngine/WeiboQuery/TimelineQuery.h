@@ -7,18 +7,15 @@
 //
 
 #import "WeiboQuery.h"
-#import "WeiboRequest.h"
-#import "User.h"
-#import "Status.h"
+
+@class WeiboRequest;
 
 typedef enum {
-    StatusTimelineFriends = 0,
-    StatusTimelineMentions = 1,
+  StatusTimelineFriends = 0,
+  StatusTimelineMentions = 1,
 } StatusTimeline;
 
-@interface TimelineQuery : WeiboQuery {
-    void (^_completionBlock)(WeiboRequest *request, NSMutableArray *statuses, NSError *error);
-}
+@interface TimelineQuery : WeiboQuery
 
 @property (copy) void (^completionBlock)(WeiboRequest *request, NSMutableArray *statuses, NSError *error);
 

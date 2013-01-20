@@ -8,21 +8,16 @@
 
 #import <Foundation/Foundation.h>
 #import "WeiboQuery.h"
-#import "WeiboRequest.h"
-#import "User.h"
 
-@interface UserQuery : WeiboQuery {
-    void (^_completionBlock)(WeiboRequest *request, User *user, NSError *error);
+@class WeiboQuery, WeiboRequest, User;
 
-}
+@interface UserQuery : WeiboQuery
 
 @property (copy) void (^completionBlock)(WeiboRequest *request, User *user, NSError *error);
 
 + (UserQuery *)query;
 
 - (void)queryWithUserId:(long long)userId;
-
 - (void)queryWithScreenName:(NSString *)screenName;
-
 
 @end

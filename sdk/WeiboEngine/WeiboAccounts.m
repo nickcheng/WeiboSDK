@@ -11,6 +11,7 @@
 #import "WeiboAuthentication.h"
 #import "UserQuery.h"
 #import "PathHelper.h"
+#import "User.h"
 
 @implementation WeiboAccounts {
   NSMutableDictionary *_accountsDictionary;
