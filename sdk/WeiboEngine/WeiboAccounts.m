@@ -27,12 +27,13 @@
 }
 
 - (id)init {
-    self = [super init];
-    if (self) {
-        _accountsDictionary = [[NSMutableDictionary alloc] init];
-        _accounts = [[NSMutableArray alloc] init];
-    }
-    return self;
+  self = [super init];
+  if (self) {
+    _accountsDictionary = [[NSMutableDictionary alloc] init];
+    _accounts = [[NSMutableArray alloc] init];
+    [self loadWeiboAccounts];
+  }
+  return self;
 }
 
 - (NSString *)getWeiboAccountsStoragePath {
