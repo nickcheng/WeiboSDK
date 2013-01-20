@@ -1,3 +1,8 @@
+# Modifications by Nick #
+* 全面支持 ARC. so iOS 5.
+* 去掉了 JSONKit 的依赖, 改用水果家自己的 JSON 解析
+* 去掉了 ASIHttpRequest 的依赖, 改用 AFNetworking 作为网络模块
+
 # WeiboSDK #
 新浪微博SDK，基于v2版API接口，对认证和请求进行了封装，
 
@@ -14,10 +19,8 @@ SDK应用示例(非静态库引用，代码引用)，包含最新微博列表、
 关于API的完整文档请参考：[新浪微博API文档](http://open.weibo.com/wiki/%E9%A6%96%E9%A1%B5 "新浪微博API文档") 。
 
 ##第三方类库##
-###ASIHttpRequest###
-[ASIHttpRequest](http://allseeing-i.com/ASIHTTPRequest/ "ASIHttpRequest官方网站") 是一个对HTTP请求进行封装的类库，WeiboSDK的所有HTTP请求都使用ASIHttpRequest。
-###JsonKit###
-[JsonKit](https://github.com/johnezang/JSONKit "JsonKit 官方网站") 是一个Json解析的开源类库，新浪微博返回的Json数据都是基于它来解析。
+### AFNetworking ###
+[AFNetworking](https://github.com/AFNetworking/AFNetworking "ASIHttpRequest官方网站") A delightful iOS and OS X networking framework.
 ###MBProgressHUD###
 [MBProgressHUD](https://github.com/jdg/MBProgressHUD "MBProgressHUD 官方网站") 是一个漂亮的Loading对话框类库，在一些需要提示Loading的消息框使用它来显示。
 
