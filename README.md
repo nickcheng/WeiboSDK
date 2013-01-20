@@ -7,10 +7,12 @@
 新浪微博SDK，基于v2版API接口，对认证和请求进行了封装，
 
 ## 静态库引用SDK实例 ##
+实例暂未更新!
 SDK应用示例(静态库引用)，包含最新微博列表、多帐号管理、发布文字微博、发布图片微博等功能示例。
 静态库引用SDK的安装方式请见：[sample](https://github.com/JimLiu/WeiboSDK/tree/master/sample "新浪微博SDK示例") 。
 
 ## 非静态库引用SDK实例 ##
+实例暂未更新!
 SDK应用示例(非静态库引用，代码引用)，包含最新微博列表、多帐号管理、发布文字微博、发布图片微博等功能示例。
 非静态库安装方式请见：[sample_nolib](https://github.com/JimLiu/WeiboSDK/tree/master/sample_nolib "新浪微博SDK示例") 。
 
