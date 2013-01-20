@@ -9,16 +9,12 @@
 #import <Foundation/Foundation.h>
 #import "NSDictionaryAdditions.h"
 
-@interface GeoInfo : NSObject<NSCoding> {
-    double _latitude;               //纬度
-	double _longitude;              //经度
-}
-
-- (id)initWithJsonDictionary:(NSDictionary*)dic;
-
+@interface GeoInfo : NSObject<NSCoding>
 
 @property (nonatomic, assign) double latitude;  //纬度
 @property (nonatomic, assign) double longitude; //经度
+
+- (id)initWithJsonDictionary:(NSDictionary*)dic;
 
 
 @end

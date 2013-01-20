@@ -8,7 +8,6 @@
 
 #import <Foundation/Foundation.h>
 
-
 @interface NSDictionary (Additions)
 
 - (BOOL)boolValueForKey:(NSString *)key;

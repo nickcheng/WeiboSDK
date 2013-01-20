@@ -9,15 +9,12 @@
 #import <Foundation/Foundation.h>
 
 @interface Province : NSObject<NSCoding> {
-	NSString *_name;
-	NSString *_provinceId;
-	NSMutableDictionary *_cities;
 }
-
-- (id)initWithDictionary:(NSDictionary *)dict;
 
 @property (nonatomic, copy) NSString *name;
 @property (nonatomic, retain) NSString *provinceId;
 @property (nonatomic, retain) NSMutableDictionary *cities;
+
+- (id)initWithDictionary:(NSDictionary *)dict;
 
 @end

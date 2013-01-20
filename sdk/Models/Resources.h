@@ -7,12 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "Province.h"
 
 @interface Resources : NSObject
 
 + (NSString *)provincesJson;
-
 + (NSString *)getProvinceName:(NSString *)provinceId;
 + (NSString *)getCityNameWithProvinceId:(NSString *)provinceId
 							 withCityId:(NSString *)cityId;

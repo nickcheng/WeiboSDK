@@ -8,41 +8,42 @@
 
 #import "GeoInfo.h"
 
-@implementation GeoInfo
+@implementation GeoInfo {
+  double _latitude;               //纬度
+	double _longitude;              //经度
+}
+
 @synthesize latitude = _latitude;
 @synthesize longitude = _longitude;
 
-- (id)initWithJsonDictionary:(NSDictionary*)dic
-{
+- (id)initWithJsonDictionary:(NSDictionary*)dic {
 	self = [super init];
-    if (self) {
-        NSArray *coordinatesArray = [dic arrayValueForKey:@"coordinates"];
-        if (coordinatesArray && coordinatesArray.count == 2) {
-            self.latitude = [[coordinatesArray objectAtIndex:0] doubleValue];
-            self.longitude = [[coordinatesArray objectAtIndex:1] doubleValue];
-        }
+  if (self) {
+    NSArray *coordinatesArray = [dic arrayValueForKey:@"coordinates"];
+    if (coordinatesArray && coordinatesArray.count == 2) {
+      self.latitude = [[coordinatesArray objectAtIndex:0] doubleValue];
+      self.longitude = [[coordinatesArray objectAtIndex:1] doubleValue];
     }
-    return self;
+  }
+  return self;
 }
 
 //===========================================================
 //  Keyed Archiving
 //
 //===========================================================
-- (void)encodeWithCoder:(NSCoder *)encoder
-{
-    [encoder encodeDouble:self.latitude forKey:@"latitude"];
-    [encoder encodeDouble:self.longitude forKey:@"longitude"];
+- (void)encodeWithCoder:(NSCoder *)encoder {
+  [encoder encodeDouble:self.latitude forKey:@"latitude"];
+  [encoder encodeDouble:self.longitude forKey:@"longitude"];
 }
 
-- (id)initWithCoder:(NSCoder *)decoder
-{
-    self = [super init];
-    if (self) {
-        self.latitude = [decoder decodeDoubleForKey:@"latitude"];
-        self.longitude = [decoder decodeDoubleForKey:@"longitude"];
-    }
-    return self;
+- (id)initWithCoder:(NSCoder *)decoder {
+  self = [super init];
+  if (self) {
+    self.latitude = [decoder decodeDoubleForKey:@"latitude"];
+    self.longitude = [decoder decodeDoubleForKey:@"longitude"];
+  }
+  return self;
 }
 
 @end
