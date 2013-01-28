@@ -12,4 +12,4 @@
 #define kWeiboOAuth2ErrorDomain @"com.zhiweibo.OAuth2"
 #define kWeiboAPIErrorDomain @"com.zhiweibo.api"
 #define kWeiboUserAgent @"ZhiWeibo"
-#define kWeiboUploadImageName @"zhiweibo.png"
+#define kWeiboUploadImageName @"zhiweibo.jpg"

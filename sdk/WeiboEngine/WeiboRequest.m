@@ -229,7 +229,7 @@ static const int kGeneralErrorCode = 10000;
     else
       [dict setObject:val forKey:key];
   }
-  
+
   //
   AFHTTPClient *httpClient = [[AFHTTPClient alloc] initWithBaseURL:[NSURL URLWithString:kWeiboAPIBaseUrl]];
   NSMutableURLRequest *request;
@@ -237,8 +237,8 @@ static const int kGeneralErrorCode = 10000;
     request = [httpClient multipartFormRequestWithMethod:@"POST" path:url parameters:dict constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
       NSData *data;
       if ([params[dataKey] isKindOfClass:[UIImage class]]) {
-        data = UIImagePNGRepresentation((UIImage *)params[dataKey]);
-        [formData appendPartWithFileData:data name:dataKey fileName:kWeiboUploadImageName mimeType:@"image/png"];
+        data = UIImageJPEGRepresentation((UIImage *)params[dataKey], .8f);
+        [formData appendPartWithFileData:data name:dataKey fileName:kWeiboUploadImageName mimeType:@"image/jpeg"];
       } else {
         data = params[dataKey];
         NSString *contentType = [self contentTypeForImageData:params[dataKey]];
