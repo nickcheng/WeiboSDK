@@ -45,19 +45,19 @@
 
 - (void)cancel:(id)sender {
   //
-  [self close];
-  
-  //
-  if ([self.delegate respondsToSelector:@selector(didCancelled)]) {
-    [self.delegate performSelector:@selector(didCancelled)];
-  }
+  [self closeWithCompletion:^{
+    //
+    if ([self.delegate respondsToSelector:@selector(didCancelled)]) {
+      [self.delegate performSelector:@selector(didCancelled)];
+    }
+  }];
 }
 
-- (void)close {
+- (void)closeWithCompletion:(void (^)(void)) cmpltn {
   //
   [HUD hide:YES];
   _closed = YES;
-  [self dismissViewControllerAnimated:YES completion:NULL];
+  [self dismissViewControllerAnimated:YES completion:cmpltn];
 }
 
 - (void)stop:(id)sender {
@@ -144,10 +144,11 @@
     NSString *code = [request.URL.absoluteString substringFromIndex:range.location + range.length];
     NSLog(@"code: %@", code);
     
-    if ([self.delegate respondsToSelector:@selector(didReceiveAuthorizeCode:)]) {
-      [self.delegate performSelector:@selector(didReceiveAuthorizeCode:) withObject:code];
-    }
-    [self close];
+    [self closeWithCompletion:^{
+      if ([self.delegate respondsToSelector:@selector(didReceiveAuthorizeCode:)]) {
+        [self.delegate performSelector:@selector(didReceiveAuthorizeCode:) withObject:code];
+      }
+    }];
   }
   
   return YES;
