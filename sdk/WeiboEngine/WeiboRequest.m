@@ -181,7 +181,16 @@ static const int kGeneralErrorCode = 10000;
     });
   } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
     NSLog(@"_request error!!!, Reason:%@, errordetail:%@", error.localizedFailureReason, error.localizedDescription);
-    [tempSelf failWithError:error];
+    
+    NSError *jsonError, *resultError;
+    NSString *jsonString = error.userInfo[NSLocalizedRecoverySuggestionErrorKey];
+    NSDictionary *result = [NSJSONSerialization JSONObjectWithData:[jsonString dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingMutableContainers error:&jsonError];
+    if (!jsonError)
+      resultError = [[NSError alloc] initWithDomain:kWeiboAPIErrorDomain code:result[@"error_code"] userInfo:result];
+    else
+      resultError = error;
+    
+    [tempSelf failWithError:resultError];
   }];
   
   [_operation start];
@@ -262,8 +271,17 @@ static const int kGeneralErrorCode = 10000;
       [tempSelf handleResponseData:operation.responseData];
     });
   } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-    NSLog(@"_request error!!!, Reason:%@, errordetail:%@", error.localizedFailureReason, error.localizedDescription);
-    [tempSelf failWithError:error];
+    NSLog(@"_request error!!!, Reason:%@, errordetail:%@.", error.localizedFailureReason, error.localizedDescription);
+    
+    NSError *jsonError, *resultError;
+    NSString *jsonString = error.userInfo[NSLocalizedRecoverySuggestionErrorKey];
+    NSDictionary *result = [NSJSONSerialization JSONObjectWithData:[jsonString dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingMutableContainers error:&jsonError];
+    if (!jsonError)
+      resultError = [[NSError alloc] initWithDomain:kWeiboAPIErrorDomain code:[result[@"error_code"] intValue] userInfo:result];
+    else
+      resultError = error;
+    
+    [tempSelf failWithError:resultError];
   }];
   
   [_operation start];
